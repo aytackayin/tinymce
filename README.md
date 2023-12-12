@@ -9,7 +9,7 @@
 You can install the package via composer:
 
 ```bash
-composer require aytackayin/tinymce
+composer require aytackayin/tinymce:dev-main
 ```
 Publish the assets:
 ```bash
