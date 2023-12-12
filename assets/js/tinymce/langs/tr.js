@@ -256,7 +256,7 @@ tinymce.addI18n('tr',{
 "Selection": "Se\u00e7im",
 "Words": "S\u00f6zc\u00fck",
 "Words: {0}": "Kelime: {0}",
-"{0} words": "{0} words",
+"{0} words": "{0} kelime",
 "File": "Dosya",
 "Edit": "D\u00fczenle",
 "Insert": "Ekle",
