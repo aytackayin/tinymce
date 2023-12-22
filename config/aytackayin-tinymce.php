@@ -49,5 +49,5 @@ return [
             'upload_directory' => null,
         ]
     ],
-    'file_manager' => 'file-manager'
+    'file_manager' => 'touch-media'
 ];
