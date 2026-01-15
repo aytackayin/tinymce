@@ -1,7 +1,7 @@
 {
     "name": "aytackayin/tinymce",
-    "description": "Filament Tinymce Plugin",
-    "version": "1.0.0",
+    "description": "Filament 4/3 Tinymce Plugin with Code Editor",
+    "version": "1.0.1",
     "require": {
         "filament/filament": "^3.0|^4.0"
     },
