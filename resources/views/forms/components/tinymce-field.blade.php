@@ -1,9 +1,5 @@
-<x-dynamic-component
-    :component="$getFieldWrapperView()"
-    :field="$field"
->
-    <div
-        x-data="{ state: $wire.$entangle('{{ $getStatePath() }}'), initialized: false }"
+<x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
+    <div x-data="{ state: $wire.$entangle('{{ $getStatePath() }}'), initialized: false }"
         x-load-js="[@js(\Filament\Support\Facades\FilamentAsset::getScriptSrc($getLanguageId(), 'aytackayin-tinymce'))]"
         x-init="(() => {
             let editor = null;
@@ -31,16 +27,22 @@
                     remove_script_host: {{ $getRemoveScriptHost() ? 'true' : 'false' }},
                     convert_urls: {{ $getConvertUrls() ? 'true' : 'false' }},
                     images_upload_handler: (blobInfo, success, failure, progress) => {
-                        if (!blobInfo.blob()) return
+                        const blob = blobInfo.blob()
+                        if (!blob) return
 
-                        $wire.upload(`componentFileAttachments.{{ $getStatePath() }}`, blobInfo.blob(), () => {
-                            $wire.getFormComponentFileAttachmentUrl('{{ $getStatePath() }}').then((url) => {
-                                if (!url) {
-                                    failure('{{ __('Error uploading file') }}')
-                                    return
-                                }
-                                success(url)
-                            })
+                        const uploadKey = Math.random().toString(36).substring(7)
+                        const timestamp = new Date().getTime()
+                        const filename = (typeof blobInfo.filename === 'function') ? blobInfo.filename() : (uploadKey + '.png')
+                        const uniqueFilename = timestamp + '-' + filename
+                        const fileToUpload = new File([blob], uniqueFilename, { type: blob.type })
+
+                        $wire.upload(`componentFileAttachments.{{ $getStatePath() }}.${uploadKey}`, fileToUpload, async () => {
+                            const url = await $wire.callSchemaComponentMethod('{{ $getKey() }}', 'saveTinyMceFileAttachment', { attachmentKey: uploadKey })
+                            if (!url) {
+                                failure('{{ __('Error uploading file') }}')
+                                return
+                            }
+                            success(url)
                         })
                     },
                     automatic_uploads: true,
@@ -99,7 +101,10 @@
                           resizable : 'yes',
                           close_previous : 'no',
                           onMessage: (api, message) => {
-                            callback(message.content);
+                            if (message.mceAction === 'insert') {
+                                callback(message.content, { alt: message.alt || '' });
+                                api.close();
+                            }
                           }
                         });
                     },
@@ -120,22 +125,13 @@
                     } catch (e) {}
                 }
             };
-        })()"
-        x-cloak
-        wire:ignore
-    >
+        })()" x-cloak wire:ignore>
         @unless($isDisabled())
-            <input
-                id="tiny-editor-{{ $getId() }}"
-                type="hidden"
-                x-ref="tinymce"
-                placeholder="{{ $getPlaceholder() }}"
-            >
+            <input id="tiny-editor-{{ $getId() }}" type="hidden" x-ref="tinymce" placeholder="{{ $getPlaceholder() }}">
         @else
-            <div
-                x-html="state"
-                class="block w-full max-w-none rounded-lg border border-gray-300 bg-white p-3 opacity-70 shadow-sm transition duration-75 prose dark:prose-invert dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            ></div>
+            <div x-html="state"
+                class="block w-full max-w-none rounded-lg border border-gray-300 bg-white p-3 opacity-70 shadow-sm transition duration-75 prose dark:prose-invert dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+            </div>
         @endunless
     </div>
 </x-dynamic-component>

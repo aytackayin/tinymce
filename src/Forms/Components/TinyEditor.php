@@ -311,4 +311,47 @@ class TinyEditor extends Field implements Contracts\CanBeLengthConstrained
     {
         return config('aytackayin-tinymce.file_manager');
     }
+
+    #[\Filament\Support\Components\Attributes\ExposedLivewireMethod]
+    #[\Livewire\Attributes\Renderless]
+    public function saveTinyMceFileAttachment(string $attachmentKey): ?string
+    {
+        $statePath = $this->getStatePath();
+        $livewire = $this->getLivewire();
+
+        // Get from keyed upload
+        $attachment = data_get($livewire, "componentFileAttachments.{$statePath}.{$attachmentKey}");
+
+        if (!($attachment instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)) {
+            // Fallback for non-keyed or array format
+            $fallback = data_get($livewire, "componentFileAttachments.{$statePath}");
+            if (is_array($fallback)) {
+                $attachment = data_get($fallback, $attachmentKey) ?? array_shift($fallback);
+            } else {
+                $attachment = $fallback;
+            }
+        }
+
+        if (!($attachment instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)) {
+            return null;
+        }
+
+        try {
+            // Verify file exists and has content
+            if (!$attachment->exists() || $attachment->getSize() === 0) {
+                return null;
+            }
+
+            $file = $this->saveUploadedFileAttachment($attachment);
+
+            if (!$file) {
+                return null;
+            }
+
+            return $this->getFileAttachmentUrl($file);
+        } catch (\Throwable $e) {
+            report($e);
+            return null;
+        }
+    }
 }
