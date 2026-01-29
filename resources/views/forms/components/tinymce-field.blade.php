@@ -1,5 +1,5 @@
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
-    <div x-data="{ state: $wire.$entangle('{{ $getStatePath() }}'), initialized: false }"
+    <div x-data="{ state: $wire.$entangle('{{ $getStatePath() }}'), initialized: false }" {{-- Force Recompile --}}
         x-load-js="[@js(\Filament\Support\Facades\FilamentAsset::getScriptSrc($getLanguageId(), 'aytackayin-tinymce'))]"
         x-init="(() => {
             let editor = null;
